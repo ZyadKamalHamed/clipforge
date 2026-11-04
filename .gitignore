@@ -1,0 +1,22 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+web/node_modules/
+web/dist/
+.superpowers/
+clipforge/server/static/
+web/.vite/
+.DS_Store
+
+# Private build notes: these stay on this Mac and out of the public repo.
+docs/SPEC.md
+docs/PLAN.md
+docs/HANDOVER.md
+docs/RESEARCH.md
+docs/goal.txt
+docs/plans/
+docs/reviews/
+docs/research/
+docs/tour/

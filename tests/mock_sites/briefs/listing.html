@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Open campaigns</title>
+<link rel="stylesheet" href="/style.css">
+<script src="http://other.example/tracker.js"></script>
+</head>
+<body>
+<h1>Open campaigns</h1>
+<img src="/logo.png" alt="">
+<ul id="list"></ul>
+<script>
+  // The list is built by the page's own script, so a plain fetch sees no campaign links.
+  const list = document.getElementById("list");
+  for (const n of [1, 2, 3]) {
+    const item = document.createElement("li");
+    const link = document.createElement("a");
+    link.href = "/campaign/" + n;
+    link.textContent = "Campaign " + n;
+    item.append(link);
+    list.append(item);
+  }
+  fetch("/api/more").catch(() => {});
+  fetch("/api/more", { method: "POST" }).catch(() => {});
+</script>
+</body>
+</html>

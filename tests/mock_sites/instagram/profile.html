@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Instagram</title></head>
+<body>
+<header>
+  <img id="avatar" width="96" height="96" alt="">
+  <h2 id="title"></h2>
+  <a id="edit" href="/accounts/edit/" hidden>Edit profile</a>
+  <button id="follow" type="button" hidden>Follow</button>
+</header>
+<main><p>Posts</p><p>Reels</p></main>
+<script>
+const CONFIG = __CONFIG__;
+document.getElementById("title").textContent = CONFIG.handle;
+const avatar = document.getElementById("avatar");
+avatar.alt = `${CONFIG.handle}'s profile picture`;
+avatar.src = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'>" +
+  "<circle cx='48' cy='48' r='48' fill='%23c13584'/></svg>";
+// The account's own profile has its edit link; anyone else's has Follow
+document.getElementById(CONFIG.own ? "edit" : "follow").hidden = false;
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+[project]
+name = "clipforge"
+version = "0.1.0"
+description = "Turns long videos into short vertical clips on this Mac and posts the ones you pick."
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Zyad Kamal Hamed" }]
+requires-python = "==3.12.*"
+dependencies = [
+  # Nightly on purpose: YouTube changes often. uv.lock holds the exact build; the Update button bumps it.
+  "yt-dlp[default,curl-cffi,deno]>=2026.10.10.dev0",
+  "parakeet-mlx==0.5.3",
+  "huggingface-hub==2.2.0",  # model downloads; 2.x never resumes a stopped one
+  "mlx==0.32.4",
+  "numpy==2.5.4",
+  "pydantic==2.14.1",
+  "httpx==0.28.1",
+  "keyring==25.7.0",
+  "opencv-python-headless==4.14.0.94",
+  "pillow==12.3.0",
+  "fastapi==0.142.2",
+  "starlette==1.7.0",
+  "uvicorn==0.54.0",
+  "playwright==1.63.0",  # the browser route drives the installed Chrome (SPEC 10.3)
+]
+
+[project.optional-dependencies]
+whisper = ["mlx-whisper==0.4.3"]
+
+[project.scripts]
+clipforge = "clipforge.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest==9.1.1",
+    "ruff==0.17.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.11.24,<0.12"]
+build-backend = "uv_build"
+
+[tool.uv]
+environments = ["sys_platform == 'darwin' and platform_machine == 'arm64'"]
+
+[tool.uv.build-backend]
+module-name = "clipforge"
+module-root = ""
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not live'"
+markers = [
+  "live: talks to real services such as YouTube or Claude; run by hand",
+  "slow: uses real models or long media",
+  "ui: drives the built window in headless Chrome",
+]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+# The research scripts in docs/research/code/ are kept exactly as measured.
+extend-exclude = ["docs"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM"]

@@ -1,0 +1,55 @@
+{
+  "urls": {
+    "upload": "https://www.tiktok.com/tiktokstudio/upload?from=upload&lang=en",
+    "content": "https://www.tiktok.com/tiktokstudio/content",
+    "login": "https://www.tiktok.com/login?lang=en",
+    "profile": "https://www.tiktok.com/profile",
+    "home": "https://www.tiktok.com/"
+  },
+  "steps": {
+    "discard": ["xpath=//button[normalize-space(.)='Discard']"],
+    "file_input": ["input[type=file]", "input[type='file'][accept='video/*']"],
+    "processed": ["xpath=//div[contains(@class, 'resolution-label-text')]"],
+    "editor": ["div.public-DraftEditor-content", "div[contenteditable='true']", "div[data-contents='true']"],
+    "cookie_banner": ["tiktok-cookie-banner >> div.button-wrapper >> button:has-text('Decline')"],
+    "split_prompt": ["xpath=//button[./div[text()='Not now']]", "xpath=//button[normalize-space(.)='Not now']"],
+    "tour": ["xpath=//button[normalize-space(.)='Got it']"],
+    "content_check": ["div.common-modal-footer > button[data-type='neutral']"],
+    "popover": [".mention-list-popover"],
+    "visibility": ["xpath=//div[@data-e2e='video_visibility_container']//button[@role='combobox']"],
+    "visibility_option": ["xpath=//div[@role='option' and contains(., '{label}')]"],
+    "switch": ["xpath=//label[.='{label}']/following-sibling::div/input"],
+    "disclosure": [
+      "xpath=//label[.='Disclose post content']/following-sibling::div/input",
+      "[data-e2e='disclose_content_switch'] input"
+    ],
+    "branded_content": ["xpath=//label[contains(., 'Branded content')]//input"],
+    "copyright": ["div[data-e2e='copyright_container']"],
+    "copyright_switch": ["div[data-e2e='copyright_container'] span[data-part='thumb']"],
+    "post": ["xpath=//button[@data-e2e='post_video_button']", "div.button-group button >> nth=0"],
+    "post_now": ["xpath=//button[.//div[text()='Post now']]", "xpath=//button[normalize-space(.)='Post now']"],
+    "schedule_radio": [
+      "role=radio[name=\"Schedule\"]",
+      "xpath=//label[normalize-space(.)='Schedule']//input[@type='radio']"
+    ],
+    "schedule_done": ["xpath=//button[@data-e2e='post_video_button' and normalize-space(.)='Schedule']"],
+    "schedule_date": ["div.scheduled-picker input[value*='-']", "input[value*='-']"],
+    "calendar_week": ["div.calendar-wrapper div.days-wrapper"],
+    "calendar_header": ["div.calendar-wrapper span.month-title"],
+    "calendar_next": ["div.calendar-wrapper span.arrow >> nth=-1"],
+    "calendar_day": [
+      "xpath=//div[contains(@class, 'calendar-wrapper')]//span[contains(concat(' ', normalize-space(@class), ' '), ' day ') and contains(concat(' ', normalize-space(@class), ' '), ' valid ') and normalize-space(.)='{label}']"
+    ],
+    "schedule_time": ["div.scheduled-picker input[value*=':']", "input[value*=':']"],
+    "time_hours": ["xpath=//span[contains(concat(' ', normalize-space(@class), ' '), ' tiktok-timepicker-left ') and normalize-space(.)='{label}']"],
+    "time_minutes": ["xpath=//span[contains(concat(' ', normalize-space(@class), ' '), ' tiktok-timepicker-right ') and normalize-space(.)='{label}']"],
+    "success": [
+      "xpath=//div[contains(text(), 'Your video has been uploaded') or contains(text(), 'Video published')]",
+      "text=Leaving the page does not interrupt"
+    ],
+    "failure": ["text=Something went wrong"],
+    "dialog": ["[role=dialog]", ".TUXModal-overlay"],
+    "avatar": ["[data-e2e='user-avatar']", "img[class*='Avatar']"]
+  },
+  "required": ["file_input"]
+}

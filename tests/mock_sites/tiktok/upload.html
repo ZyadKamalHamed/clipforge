@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TikTok Studio</title>
+<style>
+  body { font: 14px sans-serif; margin: 0; padding: 20px 20px 160px; }
+  .hidden { display: none !important; }
+  section { margin: 12px 0; }
+  #cookie { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; }
+  .overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: 100; }
+  .tour-tip { position: fixed; top: 40%; left: 40%; z-index: 101; background: #fff; padding: 16px; }
+  .common-modal, .discard-modal, .split-prompt, .TUXModal-overlay {
+    position: fixed; top: 25%; left: 30%; z-index: 90; background: #fff; border: 1px solid #333; padding: 16px;
+  }
+  .public-DraftEditor-content { min-height: 60px; border: 1px solid #999; padding: 8px; white-space: pre-wrap; }
+  .mention-list-popover { border: 1px solid #333; background: #fff; width: 240px; }
+  .mention-list-popover > div { padding: 4px; cursor: pointer; }
+  .switch-row { display: flex; gap: 8px; align-items: center; }
+  [role=listbox] { border: 1px solid #333; width: 160px; }
+  [data-part=thumb] { display: inline-block; width: 28px; height: 16px; background: #ccc; border-radius: 8px; }
+  .toast { color: #b00; }
+  .scheduled-picker { display: flex; gap: 8px; position: relative; }
+  .calendar-wrapper, .tiktok-timepicker-time-picker-container {
+    position: absolute; top: 32px; z-index: 20; background: #fff; border: 1px solid #333; padding: 8px;
+  }
+  .days-wrapper { display: flex; gap: 2px; }
+  .day { display: inline-block; width: 28px; text-align: center; color: #bbb; }
+  .day.valid { color: #000; cursor: pointer; }
+  .arrow { cursor: pointer; padding: 0 8px; }
+  .tiktok-timepicker-time-picker-container { display: flex; gap: 8px; }
+  .tiktok-timepicker-time-scroll-container { height: 96px; overflow-y: auto; width: 48px; }
+  .tiktok-timepicker-left, .tiktok-timepicker-right { display: block; height: 32px; line-height: 32px; cursor: pointer; }
+</style>
+</head>
+<body>
+<script>const CONFIG = __CONFIG__;</script>
+<tiktok-cookie-banner id="cookie"></tiktok-cookie-banner>
+
+<section id="draft" class="hidden">
+  <p>A video you were editing wasn't saved. Continue editing?</p>
+  <button id="draft-discard">Discard</button> <button id="draft-continue">Continue</button>
+</section>
+<div id="discard-confirm" class="discard-modal hidden" role="dialog">
+  <p>Discard this post?</p>
+  <button id="confirm-discard">Discard</button> <button id="confirm-cancel">Cancel</button>
+</div>
+
+<section id="uploader" class="hidden">
+  <p>Select video to upload</p>
+  <button id="select">Select video</button>
+</section>
+
+<section id="form" class="hidden">
+  <div class="info-progress"><div id="resolution" class="resolution-label-text hidden">1080P</div></div>
+  <p>Description</p>
+  <div class="DraftEditor-root">
+    <div id="editor" class="public-DraftEditor-content" contenteditable="true" role="combobox">
+      <div id="contents" data-contents="true"></div>
+    </div>
+  </div>
+  <div id="popover" class="mention-list-popover hidden"></div>
+
+  <div data-e2e="video_visibility_container">
+    <span>Who can watch this video</span>
+    <button id="visibility" role="combobox">Everyone</button>
+    <div id="visibility-list" role="listbox" class="hidden">
+      <div role="option">Everyone</div><div role="option">Friends</div><div role="option">Only you</div>
+    </div>
+  </div>
+  <p>Allow users to:</p>
+  <div class="switch-row"><label>Comment</label><div class="switch"><input id="comment" type="checkbox" checked></div></div>
+  <div class="switch-row"><label>Duet</label><div class="switch"><input id="duet" type="checkbox"></div></div>
+  <div class="switch-row"><label>Stitch</label><div class="switch"><input id="stitch" type="checkbox" checked></div></div>
+  <div class="switch-row"><label>Disclose post content</label><div class="switch"><input id="disclose" type="checkbox"></div></div>
+  <div id="disclose-options" class="hidden">
+    <label><input id="your-brand" type="checkbox"> Your brand</label>
+    <label><input id="branded" type="checkbox"> Branded content</label>
+  </div>
+  <div data-e2e="copyright_container">
+    <span>Run a copyright check</span> <span id="copyright-thumb" data-part="thumb"></span>
+    <span id="copyright-text"></span>
+  </div>
+  <div data-e2e="schedule_container">
+    <p>When to post</p>
+    <label><input id="when-now" type="radio" name="when" value="now" checked> Now</label>
+    <label><input id="when-schedule" type="radio" name="when" value="schedule"> Schedule</label>
+    <div id="picker" class="scheduled-picker hidden">
+      <div class="TUXInputBox"><input id="time-input" readonly value="12:00"></div>
+      <div class="TUXInputBox"><input id="date-input" readonly value=""></div>
+      <div id="time-list" class="tiktok-timepicker-time-picker-container hidden">
+        <div id="hours" class="tiktok-timepicker-time-scroll-container"></div>
+        <div id="minutes" class="tiktok-timepicker-time-scroll-container"></div>
+      </div>
+      <div id="calendar" class="calendar-wrapper hidden">
+        <div class="month-header-wrapper">
+          <span class="arrow">&lt;</span><span id="month-title" class="month-title"></span><span class="arrow">&gt;</span>
+        </div>
+        <div id="weeks"></div>
+      </div>
+    </div>
+  </div>
+  <div class="button-group">
+    <button id="post" data-e2e="post_video_button" data-disabled="true">Post</button>
+    <button id="form-discard">Discard</button>
+  </div>
+  <div id="failure" class="toast hidden">Something went wrong. Please try again.</div>
+  <div id="success" class="hidden">Your video has been uploaded. Leaving the page does not interrupt the upload.</div>
+</section>
+
+<div id="split" class="split-prompt hidden">
+  <p>Try split screen?</p>
+  <button id="split-no"><div>Not now</div></button> <button id="split-yes"><div>Try it</div></button>
+</div>
+<div id="react-joyride-portal" class="hidden">
+  <div class="react-joyride__overlay overlay"></div>
+  <div class="tour-tip"><p>New: schedule your posts</p><button id="tour-ok">Got it</button></div>
+</div>
+<div id="content-check" class="common-modal hidden">
+  <p>Turn on automatic content checks?</p>
+  <div class="common-modal-footer">
+    <button id="check-cancel" data-type="neutral">Cancel</button> <button data-type="primary">Turn on</button>
+  </div>
+</div>
+<div id="unknown" class="TUXModal-overlay hidden" role="dialog"><p>Verify it's you</p></div>
+<div id="post-now" class="TUXModal-overlay hidden" role="dialog">
+  <p>Continue to post?</p>
+  <button id="post-now-yes"><div>Post now</div></button> <button id="post-now-no"><div>Cancel</div></button>
+</div>
+
+<script>
+(() => {
+  const has = (v) => CONFIG.variants.includes(v);
+  const $ = (id) => document.getElementById(id);
+  const show = (id) => $(id).classList.remove("hidden");
+  const hide = (id) => $(id).classList.add("hidden");
+  const visible = (id) => !$(id).classList.contains("hidden");
+  const event = (name, data = {}) =>
+    fetch("/api/event", { method: "POST", body: JSON.stringify({ name, ...data }) });
+  let cookieChoice = null;
+  let processed = false;
+
+  customElements.define("tiktok-cookie-banner", class extends HTMLElement {
+    connectedCallback() {
+      const root = this.attachShadow({ mode: "open" });
+      const box = document.createElement("div");
+      box.style.cssText = "background:#222;color:#fff;padding:24px";
+      box.append("We use cookies to improve your experience.");
+      const wrapper = document.createElement("div");
+      wrapper.className = "button-wrapper";
+      for (const [text, choice] of [["Decline optional cookies", "declined"], ["Allow all", "allowed"]]) {
+        const b = document.createElement("button");
+        b.textContent = text;
+        b.addEventListener("click", () => { cookieChoice = choice; event("cookies", { choice }); this.remove(); });
+        wrapper.append(b);
+      }
+      box.append(wrapper);
+      root.append(box);
+    }
+  });
+
+  // The upload area, or a leftover draft in front of it
+  if (has("leftover_draft")) show("draft"); else show("uploader");
+  $("draft-discard").addEventListener("click", () => { hide("draft"); show("discard-confirm"); });
+  $("confirm-cancel").addEventListener("click", () => { hide("discard-confirm"); show("draft"); });
+  $("confirm-discard").addEventListener("click", () => {
+    hide("discard-confirm"); show("uploader"); event("draft_discarded");
+  });
+  if (has("phones_home")) {  // a page asking another host for something: the tests' guard must stop it
+    const img = document.createElement("img");
+    img.src = "https://www.tiktok.com/favicon.png";
+    img.alt = "";
+    document.body.append(img);
+  }
+  if (!has("no_file_input")) {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "video/*";
+    input.style.display = "none";
+    input.addEventListener("change", () => chosen(input.files[0]));
+    $("uploader").append(input);
+  }
+
+  function chosen(file) {
+    event("file_chosen", { file: file.name, size: file.size });
+    hide("uploader");
+    blocks = [[{ text: file.name.replace(/\.[^.]+$/, "") }]];  // TikTok starts the caption with the file name
+    render();
+    if (has("slow_processing")) {
+      setTimeout(() => { show("form"); ready(); }, 1000);
+    } else {
+      show("form");
+      setTimeout(() => { show("resolution"); ready(); }, 300);
+    }
+  }
+
+  function ready() {
+    processed = true;
+    updatePost();
+    show("split"); show("react-joyride-portal"); show("content-check");
+    if (has("unknown_modal")) show("unknown");
+    if (has("login_redirect")) location.href = "/login?redirect_url=%2Ftiktokstudio%2Fupload";
+  }
+  $("split-no").addEventListener("click", () => { hide("split"); event("split_dismissed"); });
+  $("tour-ok").addEventListener("click", () => { hide("react-joyride-portal"); event("tour_dismissed"); });
+  $("check-cancel").addEventListener("click", () => { hide("content-check"); event("content_check_dismissed"); });
+
+  // The caption: a Draft.js-like editor that keeps its own blocks and ignores the DOM
+  const editor = $("editor");
+  const contents = $("contents");
+  const popover = $("popover");
+  let blocks = [[{ text: "" }]];
+  let selectAll = false;
+  let mention = null;  // the hashtag being typed: { query, opened }
+  let startMention = false;
+
+  const last = () => blocks[blocks.length - 1];
+  function append(text) {
+    if (selectAll) { blocks = [[{ text: "" }]]; selectAll = false; }
+    const block = last();
+    const tail = block[block.length - 1];
+    if (tail.tag !== undefined) block.push({ text }); else tail.text += text;
+  }
+  function backspace() {
+    if (selectAll) { blocks = [[{ text: "" }]]; selectAll = false; return; }
+    const block = last();
+    const tail = block[block.length - 1];
+    if (tail.text.length > 0) {
+      if (tail.tag !== undefined) block.pop(); else tail.text = [...tail.text].slice(0, -1).join("");
+      if (block.length === 0) block.push({ text: "" });
+    } else if (block.length > 1) {
+      block.pop();
+    } else if (blocks.length > 1) {
+      blocks.pop();
+    }
+  }
+  function render() {
+    contents.replaceChildren();
+    for (const block of blocks) {
+      const row = document.createElement("div");
+      row.dataset.block = "true";
+      const text = block.map((s) => s.text).join("");
+      if (!text) row.append(document.createElement("br"));
+      for (const s of block) {
+        if (!s.text) continue;
+        const span = document.createElement("span");
+        if (s.tag !== undefined) span.className = "hash-tag-topic"; else span.dataset.text = "true";
+        span.textContent = s.text;
+        row.append(span);
+      }
+      contents.append(row);
+    }
+    const range = document.createRange();
+    range.selectNodeContents(contents);
+    range.collapse(false);
+    const sel = getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+  const caption = () => blocks.map((b) => b.map((s) => s.text).join("")).join("\n");
+  const tags = () => blocks.flat().filter((s) => s.tag !== undefined).map((s) => s.text);
+
+  function closeMention() { mention = null; hide("popover"); }
+  function rows() {
+    popover.replaceChildren();
+    const q = mention.query;
+    const names = q ? (has("no_popover_match") ? [`#${q}tok`, `#${q}s`] : [`#${q}tok`, `#${q}`]) : ["#fyp", "#foryou"];
+    names.forEach((name, i) => {
+      const row = document.createElement("div");
+      const title = document.createElement("span");
+      title.className = "hashtag-name";
+      title.textContent = name;
+      const views = document.createElement("span");
+      views.textContent = `${(i + 1) * 1.2}M views`;
+      row.append(title, " ", views);
+      row.addEventListener("mousedown", (e) => { e.preventDefault(); pick(name); });
+      popover.append(row);
+    });
+  }
+  function pick(name) {
+    const typed = 1 + mention.query.length;
+    const block = last();
+    const tail = block[block.length - 1];
+    tail.text = [...tail.text].slice(0, -typed).join("");
+    block.push({ text: name, tag: name.slice(1) }, { text: " " });
+    closeMention();
+    render();
+    event("popover_pick", { tag: name });
+  }
+
+  editor.addEventListener("keydown", (e) => {
+    if (e.metaKey && e.key.toLowerCase() === "a") { e.preventDefault(); selectAll = true; return; }
+    if (e.key === "Backspace") { e.preventDefault(); backspace(); render(); return; }
+    if (e.key === "Enter") { e.preventDefault(); closeMention(); blocks.push([{ text: "" }]); selectAll = false; render(); return; }
+    if (e.key === "Escape") { e.preventDefault(); closeMention(); return; }
+    if (e.key === "#") startMention = true;
+  });
+  editor.addEventListener("beforeinput", (e) => {
+    e.preventDefault();
+    if (e.inputType === "insertParagraph" || e.inputType === "insertLineBreak") {
+      blocks.push([{ text: "" }]);
+    } else if (e.inputType === "deleteContentBackward") {
+      backspace();
+    } else if (e.data) {
+      append(e.data);
+      if (startMention && e.data === "#") {
+        startMention = false;
+        mention = { query: "" };
+        const m = mention;
+        setTimeout(() => { if (mention === m) { rows(); show("popover"); } }, 50);
+      } else if (mention) {
+        if (/\s/.test(e.data)) closeMention();
+        else { mention.query += e.data; if (visible("popover")) rows(); }
+      }
+    }
+    render();
+  });
+  // Anything that reached the DOM without going through the editor's own events is undone, as Draft does
+  editor.addEventListener("input", () => render());
+  render();
+
+  // Who can watch, the switches and the disclosure
+  $("visibility").addEventListener("click", () => $("visibility-list").classList.toggle("hidden"));
+  for (const option of document.querySelectorAll("[role=option]")) {
+    option.addEventListener("click", () => { $("visibility").textContent = option.textContent; hide("visibility-list"); });
+  }
+  $("disclose").addEventListener("change", () => {
+    $("disclose-options").classList.toggle("hidden", !$("disclose").checked);
+    updatePost();
+  });
+  for (const id of ["your-brand", "branded"]) $(id).addEventListener("change", updatePost);
+  $("copyright-thumb").addEventListener("click", () => {
+    $("copyright-text").textContent = "Checking...";
+    setTimeout(() => {
+      $("copyright-text").textContent = has("copyright_match") ? "Copyright issues detected" : "No issues found.";
+    }, 300);
+  });
+
+  function updatePost() {
+    const disclosed = !$("disclose").checked || $("your-brand").checked || $("branded").checked;
+    const on = processed && disclosed && !has("never_enables");
+    $("post").dataset.disabled = String(!on);
+  }
+  // When to post: now, or TikTok Studio's own schedule (research 02, 2026-09-30). Its calendar shows a month
+  // a week row at a time with only today to 10 days on valid, and takes only a real mouse click on a day;
+  // its time picker has scrollable hour and minute columns whose rows out of sight take no click.
+  const DAY_MS = 86400000;
+  const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+    "October", "November", "December"];
+  const iso = (ms) => new Date(ms).toISOString().slice(0, 10);
+  const first = Date.parse(CONFIG.today + "T00:00:00Z");
+  const lastDay = iso(first + 10 * DAY_MS);
+  const dateInput = $("date-input");
+  const timeInput = $("time-input");
+  if (has("no_schedule")) $("when-schedule").closest("label").remove();  // a page without the choice
+  const scheduling = () => $("when-schedule")?.checked === true;
+  let view = new Date(first);  // the month the calendar shows
+
+  function setValue(input, value) {
+    input.value = value;
+    input.setAttribute("value", value);
+    event("schedule_set", { date: dateInput.value, time: timeInput.value });
+  }
+  setValue(dateInput, CONFIG.today);
+  for (const input of document.querySelectorAll("input[name=when]")) {
+    input.addEventListener("change", () => {
+      $("picker").classList.toggle("hidden", !scheduling());
+      $("post").textContent = scheduling() ? "Schedule" : "Post";
+    });
+  }
+
+  function calendar() {
+    const y = view.getUTCFullYear(), m = view.getUTCMonth();
+    $("month-title").textContent = `${MONTHS[m]}\u00a0/\u00a0${y}`;
+    const weeks = $("weeks");
+    weeks.replaceChildren();
+    let day = Date.UTC(y, m, 1) - new Date(Date.UTC(y, m, 1)).getUTCDay() * DAY_MS;
+    while (new Date(day).getUTCMonth() === m || weeks.children.length === 0) {
+      const row = document.createElement("div");
+      row.className = "days-wrapper";
+      for (let i = 0; i < 7; i++, day += DAY_MS) {
+        const cell = document.createElement("span");
+        const value = iso(day);
+        const ok = new Date(day).getUTCMonth() === m && value >= CONFIG.today && value <= lastDay;
+        cell.className = ok ? "day valid" : "day";
+        cell.textContent = String(new Date(day).getUTCDate());
+        cell.addEventListener("click", (e) => {
+          if (!e.isTrusted || !ok) return;
+          setValue(dateInput, value);
+          hide("calendar");
+        });
+        row.append(cell);
+      }
+      weeks.append(row);
+    }
+  }
+  const [prev, next] = document.querySelectorAll(".calendar-wrapper .arrow");
+  prev.addEventListener("click", () => { view = new Date(Date.UTC(view.getUTCFullYear(), view.getUTCMonth() - 1, 1)); calendar(); });
+  next.addEventListener("click", () => { view = new Date(Date.UTC(view.getUTCFullYear(), view.getUTCMonth() + 1, 1)); calendar(); });
+  dateInput.addEventListener("click", () => {
+    view = new Date(Date.parse(dateInput.value + "T00:00:00Z"));
+    calendar();
+    hide("time-list");
+    show("calendar");
+  });
+
+  function column(id, cls, values, pick) {
+    const col = $(id);
+    for (const value of values) {
+      const item = document.createElement("span");
+      item.className = cls;
+      item.textContent = value;
+      item.addEventListener("click", (e) => {
+        const box = col.getBoundingClientRect(), r = item.getBoundingClientRect();
+        if (!e.isTrusted || r.top < box.top - 1 || r.bottom > box.bottom + 1) return;
+        pick(value);
+      });
+      col.append(item);
+    }
+  }
+  const pad = (n) => String(n).padStart(2, "0");
+  column("hours", "tiktok-timepicker-left", [...Array(24).keys()].map(pad), (h) => {
+    setValue(timeInput, `${h}:${timeInput.value.slice(3)}`);
+  });
+  column("minutes", "tiktok-timepicker-right", [...Array(12).keys()].map((k) => pad(k * 5)), (m) => {
+    const shown = has("schedule_shifted") ? pad((Number(m) + 5) % 60) : m;  // a picker that slips a step
+    setValue(timeInput, `${timeInput.value.slice(0, 2)}:${shown}`);
+    hide("time-list");
+  });
+  timeInput.addEventListener("click", () => { hide("calendar"); show("time-list"); });
+
+  async function submit() {
+    if (has("failed")) { show("failure"); return; }
+    const body = {
+      caption: caption(), tags: tags(), visibility: $("visibility").textContent,
+      comment: $("comment").checked, duet: $("duet").checked, stitch: $("stitch").checked,
+      disclosure: $("disclose").checked, branded: $("branded").checked, your_brand: $("your-brand").checked,
+      cookies: cookieChoice, schedule: scheduling() ? { date: dateInput.value, time: timeInput.value } : null,
+    };
+    await fetch("/api/submit", { method: "POST", body: JSON.stringify(body) });
+    show("success");
+    setTimeout(() => { location.href = "/tiktokstudio/content"; }, 300);
+  }
+  $("post").addEventListener("click", () => {
+    if ($("post").dataset.disabled === "true") return;
+    event("post_clicked", { mode: scheduling() ? "schedule" : "now" });
+    if (scheduling()) submit(); else show("post-now");
+  });
+  $("post-now-no").addEventListener("click", () => hide("post-now"));
+  $("post-now-yes").addEventListener("click", () => {
+    if (!visible("post-now")) return;
+    hide("post-now");
+    event("post_now_clicked");
+    submit();
+  });
+
+  // The person at the window, unsure whether it went up: opens the post list without posting
+  if (has("person_opens_list")) {
+    const look = setInterval(() => {
+      const text = document.body.innerText;
+      if (!text.includes("ClipForge has filled this in") && !text.includes("ClipForge stopped here")) return;
+      clearInterval(look);
+      location.href = "/tiktokstudio/content";
+    }, 100);
+  }
+
+  // The person at the window after ClipForge stopped: presses Post (Schedule) on the page as it is
+  if (has("person_finishes")) {
+    const watch = setInterval(() => {
+      if (!document.body.innerText.includes("ClipForge stopped here")) return;
+      if ($("post").dataset.disabled === "true") return;
+      clearInterval(watch);
+      $("post").click();
+      setTimeout(() => $("post-now-yes").click(), 100);
+    }, 100);
+  }
+
+  // The person at the window: presses Post once ClipForge says it has filled the page in
+  if (has("person_posts")) {
+    const watch = setInterval(() => {
+      if (!document.body.innerText.includes("ClipForge has filled this in")) return;
+      if ($("post").dataset.disabled === "true") return;
+      clearInterval(watch);
+      $("post").click();
+      setTimeout(() => $("post-now-yes").click(), 100);
+    }, 100);
+  }
+})();
+</script>
+</body>
+</html>

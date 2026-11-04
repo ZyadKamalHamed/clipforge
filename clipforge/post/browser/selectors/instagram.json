@@ -1,0 +1,46 @@
+{
+  "urls": {
+    "upload": "https://www.instagram.com/",
+    "home": "https://www.instagram.com/",
+    "login": "https://www.instagram.com/accounts/login/",
+    "profile": "https://www.instagram.com/{handle}/",
+    "reels": "https://www.instagram.com/{handle}/reels/",
+    "reel": "https://www.instagram.com/reel/{code}/"
+  },
+  "steps": {
+    "not_now": [
+      "xpath=//button[normalize-space(.)='Not Now' or normalize-space(.)='Not now']",
+      "xpath=//div[@role='button'][normalize-space(.)='Not Now' or normalize-space(.)='Not now']"
+    ],
+    "new_post": ["a:has(svg[aria-label='New post'])", "svg[aria-label='New post']", "a[href*='/create/']"],
+    "post_option": ["a:has(svg[aria-label='Post'])", "xpath=//a[.//span[normalize-space(.)='Post']]"],
+    "file_input": ["div[role=dialog] input[type=file]", "input[type=file][accept*='video']", "input[type=file]"],
+    "reels_ok": ["xpath=//div[@role='dialog'][.//*[contains(., 'shared as reels')]]//button[normalize-space(.)='OK']"],
+    "crop": ["button:has(svg[aria-label='Select crop'])", "svg[aria-label='Select crop']"],
+    "crop_original": [
+      "xpath=//div[@role='button'][.//span[normalize-space(.)='Original']]",
+      "xpath=//span[normalize-space(.)='Original']"
+    ],
+    "next": [
+      "xpath=//div[@role='dialog']//div[@role='button'][normalize-space(.)='Next']",
+      "xpath=//div[@role='dialog']//button[normalize-space(.)='Next']"
+    ],
+    "caption": ["div[aria-label='Write a caption...']", "div[role=dialog] div[contenteditable='true']"],
+    "share": [
+      "xpath=//div[@role='dialog']//div[@role='button'][normalize-space(.)='Share']",
+      "xpath=//div[@role='dialog']//button[normalize-space(.)='Share']"
+    ],
+    "shared": [
+      "xpath=//div[@role='dialog']//span[contains(., 'Your reel has been shared') or contains(., 'Your post has been shared') or normalize-space(.)='Post shared']"
+    ],
+    "share_failed": [
+      "xpath=//div[@role='dialog']//span[contains(., \"couldn't be shared\") or contains(., 'could not be shared') or contains(., 'Something went wrong')]"
+    ],
+    "dialog": ["[role=dialog]"],
+    "login_form": ["form#loginForm", "input[name='password']"],
+    "edit_profile": ["a[href='/accounts/edit/']", "xpath=//a[normalize-space(.)='Edit profile']"],
+    "avatar": ["header img[alt*='profile picture']", "header img"],
+    "reel_link": ["a[href*='/reel/']"]
+  },
+  "required": ["new_post"]
+}

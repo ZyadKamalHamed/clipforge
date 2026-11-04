@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+/* The design tokens: dark by default, light by setting, or the Mac's own choice for "system". The server
+   writes the setting into <html data-theme> on every load. Every colour text is drawn in meets WCAG AA
+   (4.5:1) on bg, panel and panel-2 in its own theme, which tests/ui/test_screens.py checks screen by
+   screen. */
+:root {
+  color-scheme: dark;
+  --bg: #0e0e12;
+  --panel: #16161c;
+  --panel-2: #1d1d25;
+  --line: #2a2a34;
+  --text: #f2f2f5;
+  --muted: #a0a0ae;
+  --faint: #8b8b99;
+  --ok: #22c55e;
+  --warn: #f59e0b;
+  --bad: #f87171;
+  --info: #38bdf8;
+  /* The Money timeline's series, in this order, checked with the dataviz palette validator on panel in
+     each theme: colour-blind separation and normal vision pass for every neighbour. Others is grey. */
+  --series-1: #3987e5;
+  --series-2: #d95926;
+  --series-3: #199e70;
+  --series-4: #c98500;
+  --series-5: #d55181;
+  --series-6: #008300;
+  --series-other: #80808e;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f7f7f9;
+  --panel: #ffffff;
+  --panel-2: #f0f0f4;
+  --line: #e2e2e8;
+  --text: #15151b;
+  --muted: #5e5e6b;
+  --faint: #6a6a76;
+  --ok: #147a3a;
+  --warn: #a64d08;
+  --bad: #b91c1c;
+  --info: #0369a1;
+  --series-1: #2a78d6;
+  --series-2: #eb6834;
+  --series-3: #1baf7a;
+  --series-4: #eda100;
+  --series-5: #e87ba4;
+  --series-6: #008300;
+  --series-other: #8e8e9a;
+}
+
+@media (prefers-color-scheme: light) {
+  :root[data-theme="system"] {
+    color-scheme: light;
+    --bg: #f7f7f9;
+    --panel: #ffffff;
+    --panel-2: #f0f0f4;
+    --line: #e2e2e8;
+    --text: #15151b;
+    --muted: #5e5e6b;
+    --faint: #6a6a76;
+    --ok: #147a3a;
+    --warn: #a64d08;
+    --bad: #b91c1c;
+    --info: #0369a1;
+    --series-1: #2a78d6;
+    --series-2: #eb6834;
+    --series-3: #1baf7a;
+    --series-4: #eda100;
+    --series-5: #e87ba4;
+    --series-6: #008300;
+    --series-other: #8e8e9a;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-panel-2: var(--panel-2);
+  --color-line: var(--line);
+  --color-fg: var(--text);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-info: var(--info);
+}
+
+@theme {
+  --color-accent: #8b5cf6;
+  --color-accent-strong: #7c3aed; /* behind white text, which needs 4.5:1 */
+  --color-accent-deep: #6d28d9; /* the primary button under the mouse, white on it at 7.1:1 */
+  --color-bad-strong: #dc2626; /* behind white text in either theme, 4.8:1 */
+  --color-tier-post: #22c55e;
+  --color-tier-test: #38bdf8;
+  --color-tier-weak: #f59e0b;
+  --color-tier-no: #6b7280;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  --radius-card: 10px;
+  --radius-control: 8px;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Text from videos keeps its own direction without flipping what sits next to it. */
+  [dir="auto"],
+  bdi {
+    unicode-bidi: isolate;
+  }
+}

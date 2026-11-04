@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Log in | TikTok</title></head>
+<body>
+<h1>Log in to TikTok</h1>
+<p>Use phone, email or username</p>
+<script>
+const CONFIG = __CONFIG__;
+// The person logging in: a moment after the page opens, the site sets its session cookie and goes home
+if (CONFIG.login_as) {
+  setTimeout(async () => {
+    await fetch("/login/submit", { method: "POST", body: JSON.stringify({ handle: CONFIG.login_as }) });
+    location.href = "/";
+  }, 200);
+}
+</script>
+</body>
+</html>

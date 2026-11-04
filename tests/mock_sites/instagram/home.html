@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Instagram</title>
+<style>
+  body { font: 14px sans-serif; margin: 0; padding: 20px 20px 160px 220px; }
+  .hidden { display: none !important; }
+  nav { position: fixed; top: 0; left: 0; bottom: 0; width: 200px; padding: 20px; border-right: 1px solid #ddd; }
+  nav a { display: flex; gap: 8px; align-items: center; padding: 8px 0; color: #000; text-decoration: none; }
+  svg { width: 24px; height: 24px; }
+  .menu { position: fixed; top: 120px; left: 40px; z-index: 20; background: #fff; border: 1px solid #333; padding: 8px; }
+  .menu a { display: flex; gap: 8px; padding: 6px; color: #000; text-decoration: none; }
+  .backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); }
+  [role=dialog] { position: fixed; inset: 0; }
+  #composer { z-index: 30; }
+  .box { position: fixed; top: 10%; left: 25%; width: 50%; background: #fff; border-radius: 12px; padding: 0 0 16px; }
+  .head { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; border-bottom: 1px solid #ddd; }
+  .head h1 { font-size: 16px; margin: 0; }
+  [role=button] { cursor: pointer; color: #0095f6; font-weight: 600; padding: 4px; }
+  .step { padding: 16px; position: relative; }
+  #crop-menu { position: absolute; bottom: 48px; left: 16px; background: #222; color: #fff; padding: 4px; }
+  #crop-menu [role=button] { color: #fff; display: flex; gap: 8px; }
+  #caption { min-height: 80px; border: 1px solid #999; padding: 8px; white-space: pre-wrap; }
+  #caption p { margin: 0; }
+  #suggest { position: fixed; top: 9%; left: 25%; width: 50%; height: 200px; z-index: 35; background: #fff; border: 1px solid #333; }
+  .front { z-index: 40; }
+  .front .box { top: 30%; left: 35%; width: 30%; text-align: center; padding: 16px; }
+  .front button { display: block; width: 100%; margin: 6px 0; padding: 8px; }
+</style>
+</head>
+<body>
+<script>const CONFIG = __CONFIG__;</script>
+<nav>
+  <a href="/" role="link"><svg aria-label="Home" viewBox="0 0 24 24"><path d="M2 12 12 2l10 10"/></svg><span>Home</span></a>
+  <a href="#" id="create" role="link"><svg aria-label="New post" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Create</span></a>
+  <a href="#" id="profile-link" role="link"><span>Profile</span></a>
+</nav>
+<div id="create-menu" class="menu hidden">
+  <a href="#" id="menu-post" role="link"><svg aria-label="Post" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18"/></svg><span>Post</span></a>
+  <a href="#" id="menu-ai" role="link"><svg aria-label="AI" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/></svg><span>AI</span></a>
+</div>
+<main><p>Suggested for you</p></main>
+
+<div id="composer" class="hidden" role="dialog">
+  <div class="backdrop"></div>
+  <div class="box">
+    <div class="head">
+      <span></span><h1 id="title">Create new post</h1>
+      <div role="button" id="next" class="hidden">Next</div>
+      <div role="button" id="share" class="hidden">Share</div>
+    </div>
+    <div id="pick-step" class="step">
+      <p>Drag photos and videos here</p>
+      <button id="select" type="button">Select from computer</button>
+    </div>
+    <div id="crop-step" class="step hidden">
+      <div id="preview">Video preview (<span id="crop-now">1:1</span>)</div>
+      <button id="crop" type="button"><svg aria-label="Select crop" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/></svg></button>
+      <div id="crop-menu" class="hidden">
+        <div role="button" data-crop="original"><span>Original</span><svg aria-label="Photo outline icon" viewBox="0 0 24 24"><path d="M3 3h18v18H3z"/></svg></div>
+        <div role="button" data-crop="1:1"><span>1:1</span></div>
+        <div role="button" data-crop="4:5"><span>4:5</span></div>
+        <div role="button" data-crop="16:9"><span>16:9</span></div>
+      </div>
+    </div>
+    <div id="edit-step" class="step hidden"><p>Cover photo</p><p>Trim</p><p>Sound on</p></div>
+    <div id="caption-step" class="step hidden">
+      <div id="caption" aria-label="Write a caption..." contenteditable="true" role="textbox"></div>
+      <p>Add location</p><p>Accessibility</p><p>Advanced settings</p>
+    </div>
+    <div id="sharing" class="step hidden"><p>Sharing</p></div>
+    <div id="shared" class="step hidden"><img alt="Animated checkmark" src="data:,"><span>Your reel has been shared.</span></div>
+    <div id="failed" class="step hidden"><span>Your reel couldn't be shared.</span> <div role="button" id="retry">Try again</div></div>
+  </div>
+</div>
+<div id="suggest" class="hidden"></div>
+
+<div id="reels-notice" class="front hidden" role="dialog">
+  <div class="backdrop"></div>
+  <div class="box"><h2>Video posts are now shared as reels</h2><p>Your reel can be seen by anyone.</p><button id="reels-ok">OK</button></div>
+</div>
+<div id="notifications" class="front hidden" role="dialog">
+  <div class="backdrop"></div>
+  <div class="box"><h2>Turn on Notifications</h2><p>Know right away when people follow you.</p>
+    <button id="notifications-on">Turn On</button><button id="notifications-no">Not Now</button></div>
+</div>
+<div id="save-login" class="front hidden" role="dialog" style="z-index: 45">
+  <div class="backdrop"></div>
+  <div class="box"><h2>Save your login info?</h2>
+    <button id="save-login-yes">Save info</button><button id="save-login-no">Not now</button></div>
+</div>
+
+<script>
+(() => {
+  const has = (v) => CONFIG.variants.includes(v);
+  const $ = (id) => document.getElementById(id);
+  const show = (id) => $(id).classList.remove("hidden");
+  const hide = (id) => $(id).classList.add("hidden");
+  const event = (name, data = {}) =>
+    fetch("/api/event", { method: "POST", body: JSON.stringify({ name, ...data }) });
+  let crop = "1:1";
+  let step = "pick";
+
+  $("profile-link").href = `/${CONFIG.handle}/`;
+  if (has("login_redirect")) { location.href = "/accounts/login/?next=%2F"; return; }
+
+  // What greets a fresh session (research 02 section 3b), front first. Late, it comes up over the Create menu.
+  if (!has("late_notifications")) show("notifications");
+  if (has("save_login")) show("save-login");
+  $("notifications-no").addEventListener("click", () => { hide("notifications"); event("notifications_dismissed"); });
+  $("notifications-on").addEventListener("click", () => { hide("notifications"); event("notifications_on"); });
+  $("save-login-no").addEventListener("click", () => { hide("save-login"); event("save_login_dismissed"); });
+  $("save-login-yes").addEventListener("click", () => { hide("save-login"); event("save_login_saved"); });
+
+  // New post, then Post, opens the composer
+  $("create").addEventListener("click", (e) => {
+    e.preventDefault(); show("create-menu");
+    if (has("late_notifications")) show("notifications");
+  });
+  $("menu-post").addEventListener("click", (e) => {
+    e.preventDefault(); hide("create-menu"); show("composer"); event("composer_opened");
+  });
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*,video/mp4,video/quicktime";
+  input.style.display = "none";
+  input.addEventListener("change", () => chosen(input.files[0]));
+  $("pick-step").append(input);
+  $("select").addEventListener("click", () => input.click());
+
+  function chosen(file) {
+    event("file_chosen", { file: file.name, size: file.size });
+    go("crop");
+    if (!has("no_reels_notice")) setTimeout(() => show("reels-notice"), 150);
+  }
+  $("reels-ok").addEventListener("click", () => { hide("reels-notice"); event("reels_notice_ok"); });
+
+  function go(to) {
+    step = to;
+    for (const s of ["pick", "crop", "edit", "caption"]) $(`${s}-step`).classList.toggle("hidden", s !== to);
+    $("title").textContent = { pick: "Create new post", crop: "Crop", edit: "Edit", caption: "Create new reel" }[to];
+    $("next").classList.toggle("hidden", to === "pick" || to === "caption");
+    $("share").classList.toggle("hidden", to !== "caption");
+  }
+  $("crop").addEventListener("click", () => $("crop-menu").classList.toggle("hidden"));
+  for (const option of document.querySelectorAll("[data-crop]")) {
+    option.addEventListener("click", () => {
+      crop = option.dataset.crop;
+      $("crop-now").textContent = crop;
+      hide("crop-menu");
+      event(crop === "original" ? "crop_original" : "crop", { choice: crop });
+    });
+  }
+  $("next").addEventListener("click", () => {
+    const to = step === "crop" ? "edit" : "caption";
+    setTimeout(() => { go(to); event("next", { to }); }, 100);
+  });
+
+  // The caption: a Lexical-like editor that keeps its own paragraphs and ignores the DOM
+  const editor = $("caption");
+  let paragraphs = [""];
+  let suggesting = false;
+  function render() {
+    editor.replaceChildren();
+    for (const text of paragraphs) {
+      const p = document.createElement("p");
+      if (text) p.textContent = text; else p.append(document.createElement("br"));
+      editor.append(p);
+    }
+    const range = document.createRange();
+    range.selectNodeContents(editor);
+    range.collapse(false);
+    const sel = getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    // A hashtag being typed opens Instagram's list over the dialog's header; only a space closes it
+    suggesting = /#[^\s#]+$/.test(paragraphs[paragraphs.length - 1]);
+    $("suggest").classList.toggle("hidden", !suggesting);
+    if (suggesting) {
+      const tag = paragraphs[paragraphs.length - 1].match(/#[^\s#]+$/)[0];
+      $("suggest").textContent = `${tag}  1.2M posts`;
+    }
+  }
+  editor.addEventListener("keydown", (e) => { if (e.key === "Escape") e.preventDefault(); });
+  editor.addEventListener("beforeinput", (e) => {
+    e.preventDefault();
+    if (e.inputType === "insertParagraph" || e.inputType === "insertLineBreak") {
+      paragraphs.push("");
+    } else if (e.inputType === "deleteContentBackward") {
+      const tail = paragraphs.length - 1;
+      if (paragraphs[tail]) paragraphs[tail] = [...paragraphs[tail]].slice(0, -1).join("");
+      else if (tail) paragraphs.pop();
+    } else if (e.data && !has("drop_caption")) {  // drop_caption: the editor loses what is typed
+      paragraphs[paragraphs.length - 1] += e.data;
+    }
+    render();
+  });
+  editor.addEventListener("input", () => render());
+  render();
+
+  $("share").addEventListener("click", () => {
+    event("share_clicked");
+    hide("caption-step"); hide("share"); show("sharing");
+    $("title").textContent = "Sharing";
+    const caption = paragraphs.join("\n");
+    const open = suggesting;
+    setTimeout(async () => {
+      hide("sharing");
+      if (has("failed")) { show("failed"); return; }
+      await fetch("/api/submit", { method: "POST", body: JSON.stringify({ caption, crop, suggestions_open: open }) });
+      $("title").textContent = "Reel shared";
+      show("shared");
+    }, has("slow_share") ? 2000 : 300);
+  });
+})();
+</script>
+</body>
+</html>

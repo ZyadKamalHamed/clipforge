@@ -1,0 +1,15 @@
+{
+ "wireMagic": "pb3",
+ "pens": [{}],
+ "wsWinStyles": [{}, {"mhModeHint": 2, "juJustifCode": 0, "sdScrollDir": 3}],
+ "wpWinPositions": [{}, {"apPoint": 6, "ahHorPos": 20, "avVerPos": 100, "rcRows": 2, "ccCols": 40}],
+ "events": [
+  {"tStartMs": 0, "dDurationMs": 9500, "id": 1, "wpWinPosId": 1, "wsWinStyleId": 1},
+  {"tStartMs": 1000, "dDurationMs": 4000, "wWinId": 1, "segs": [{"utf8": "so", "acAsrConf": 0}, {"utf8": " this", "tOffsetMs": 400, "acAsrConf": 0}, {"utf8": " works", "tOffsetMs": 900, "acAsrConf": 0}]},
+  {"tStartMs": 2400, "dDurationMs": 2600, "wWinId": 1, "aAppend": 1, "segs": [{"utf8": "\n"}]},
+  {"tStartMs": 2500, "dDurationMs": 3000, "wWinId": 1, "segs": [{"utf8": "really", "acAsrConf": 0}, {"utf8": "\n"}, {"utf8": " well", "tOffsetMs": 600, "acAsrConf": 0}]},
+  {"tStartMs": 6000, "dDurationMs": 1500, "wWinId": 1, "segs": [{"utf8": "[Laughter]"}]},
+  {"tStartMs": 7500, "dDurationMs": 1500, "wWinId": 1, "segs": [{"utf8": "Thank you all"}]},
+  {"tStartMs": 9000, "dDurationMs": 500, "wWinId": 1, "segs": [{"utf8": ""}]}
+ ]
+}
