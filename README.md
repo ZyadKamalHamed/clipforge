@@ -58,19 +58,14 @@ Hosted clipping tools usually charge by the month, count your minutes and keep y
 
 ## How it works
 
-```mermaid
-flowchart LR
-    A["YouTube, Drive<br/>or a file"] --> B["Download<br/>yt-dlp"]
-    B --> C["Transcribe<br/>on your Mac"]
-    C --> D["Find and rank<br/>moments with AI"]
-    D --> E["Render<br/>faces, captions, sound"]
-    E --> F["Gallery<br/>you review and edit"]
-    F --> G["Queue<br/>you confirm"]
-    G --> H["TikTok"]
-    G --> I["Instagram"]
-```
+1. **Download.** yt-dlp fetches the video from YouTube or Google Drive, or you hand it a file.
+2. **Transcribe.** parakeet-mlx turns the speech into timed words on your Mac.
+3. **Find.** The AI you picked reads the transcript, then finds and ranks the moments worth clipping.
+4. **Render.** OpenCV follows the faces and ffmpeg builds each clip with its captions, title and sound.
+5. **Review.** You watch, edit and re-render in the gallery, and pick what goes out.
+6. **Post.** The queue sends what you confirmed: Instagram through Meta's API, TikTok through Chrome with Playwright.
 
-Built with Python 3.12, FastAPI and SQLite on the engine side, React 19, Vite and Tailwind in the window, parakeet-mlx for speech, OpenCV for faces, ffmpeg for rendering, yt-dlp for downloads and Playwright for driving Chrome.
+The engine is Python 3.12, FastAPI and SQLite, and the window is React 19, Vite and Tailwind.
 
 ## Screens
 
